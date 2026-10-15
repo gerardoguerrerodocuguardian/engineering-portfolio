@@ -32,6 +32,8 @@ describe('Campaign API (e2e)', () => {
         process.env.MONGODB_URI = mongod.getUri('adflow_test');
         mode = 'mongo';
       } catch (e) {
+        // CI sets E2E_REQUIRE_MONGO=1 so a silent fallback can never hide an untested Mongoose layer.
+        if (process.env.E2E_REQUIRE_MONGO === '1') throw e;
         console.warn(`mongodb-memory-server unavailable, using in-memory repository: ${e}`);
       }
     }

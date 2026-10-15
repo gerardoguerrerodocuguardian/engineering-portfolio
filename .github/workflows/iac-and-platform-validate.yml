@@ -1,0 +1,57 @@
+name: iac-and-platform-validate
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'track-architect/03-learning-platform-aws/**'
+      - 'track-architect/06-platform-engineering/**'
+      - 'track-architect/07-gcp-event-pipeline/terraform/**'
+      - 'track-architect/08-azure-platform/**'
+      - '.github/workflows/iac-and-platform-validate.yml'
+  pull_request:
+    paths:
+      - 'track-architect/03-learning-platform-aws/**'
+      - 'track-architect/06-platform-engineering/**'
+      - 'track-architect/07-gcp-event-pipeline/terraform/**'
+      - 'track-architect/08-azure-platform/**'
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir:
+          - track-architect/03-learning-platform-aws/envs/dev
+          - track-architect/03-learning-platform-aws/envs/prod
+          - track-architect/07-gcp-event-pipeline/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: fmt
+        run: terraform fmt -check -recursive "${{ matrix.dir }}"
+      - name: init (no backend, no credentials)
+        run: terraform -chdir="${{ matrix.dir }}" init -backend=false -input=false
+      - name: validate
+        run: terraform -chdir="${{ matrix.dir }}" validate
+  kubernetes:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: track-architect/06-platform-engineering
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: helm lint + template for both services
+        run: |
+          for v in values-ad-bidding.yaml values-secure-api.yaml; do
+            helm lint charts/adflow-service -f charts/adflow-service/$v
+            helm template adflow charts/adflow-service -f charts/adflow-service/$v > /tmp/$v.rendered.yaml
+          done
+      - name: kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          for f in /tmp/*.rendered.yaml; do ./kubeconform -strict -ignore-missing-schemas -kubernetes-version 1.30.0 -summary "$f"; done
+      - name: observability compose config + Prometheus alert rules
+        run: |
+          docker compose -f observability/docker-compose.yml config -q
+          docker run --rm --entrypoint promtool -v "$PWD/observability/prometheus:/p:ro" prom/prometheus:latest check rules /p/alerts.yml
