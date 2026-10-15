@@ -8,7 +8,7 @@ on:
     paths: ['track-fullstack-dev/02-nestjs-secure-api/**', 'shared/contracts/**']
 jobs:
   build-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: track-fullstack-dev/02-nestjs-secure-api

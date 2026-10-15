@@ -12,7 +12,7 @@ defaults:
     working-directory: track-fullstack-dev/05-pos-offline-pwa
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

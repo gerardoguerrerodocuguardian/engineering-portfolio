@@ -10,7 +10,7 @@ defaults:
     working-directory: track-fullstack-dev/08-micro-frontends
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,7 +31,7 @@ jobs:
   deploy-reports:
     needs: verify
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: echo "upload apps/remote-reports/dist to the CDN, then update the manifest entry version/url"

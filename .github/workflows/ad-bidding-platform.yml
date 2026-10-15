@@ -8,7 +8,7 @@ on:
     paths: ["track-architect/02-ad-bidding-platform/**"]
 jobs:
   verify:
-    runs-on: ubuntu-latest   # Docker is available, so the Testcontainers IT runs
+    runs-on: ubuntu-24.04   # Docker is available, so the Testcontainers IT runs
     defaults:
       run:
         working-directory: track-architect/02-ad-bidding-platform

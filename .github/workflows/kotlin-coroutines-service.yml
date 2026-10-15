@@ -7,7 +7,7 @@ on:
     paths: ["track-fullstack-dev/11-kotlin-coroutines-service/**", ".github/workflows/kotlin-coroutines-service.yml"]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: track-fullstack-dev/11-kotlin-coroutines-service

@@ -7,7 +7,7 @@ on:
     paths: ['track-architect/07-gcp-event-pipeline/**', 'shared/contracts/**']
 jobs:
   verify:
-    runs-on: ubuntu-latest   # Docker is available, so the Pub/Sub emulator integration test runs
+    runs-on: ubuntu-24.04   # Docker is available, so the Pub/Sub emulator integration test runs
     defaults:
       run:
         working-directory: track-architect/07-gcp-event-pipeline

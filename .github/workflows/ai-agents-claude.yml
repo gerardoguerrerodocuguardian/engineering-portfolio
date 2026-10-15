@@ -3,7 +3,7 @@ name: ads-analyst-agent
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: track-architect/05-ai-agents-claude
@@ -18,7 +18,7 @@ jobs:
   live-evals:
     # Optional: only runs when a repository secret is configured. Costs real money.
     if: ${{ github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: track-architect/05-ai-agents-claude
