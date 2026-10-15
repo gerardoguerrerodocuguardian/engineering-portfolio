@@ -1,0 +1,19 @@
+name: kotlin-coroutines-service
+on:
+  workflow_dispatch:
+  push:
+    paths: ["track-fullstack-dev/11-kotlin-coroutines-service/**", ".github/workflows/kotlin-coroutines-service.yml"]
+  pull_request:
+    paths: ["track-fullstack-dev/11-kotlin-coroutines-service/**", ".github/workflows/kotlin-coroutines-service.yml"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: track-fullstack-dev/11-kotlin-coroutines-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - name: Verify (ktlint, tests)
+        run: mvn -B verify

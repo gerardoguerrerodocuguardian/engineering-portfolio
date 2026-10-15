@@ -1,0 +1,75 @@
+# Copy to .github/workflows/azure-deploy.yml. Uses GitHub OIDC -> Entra federated credentials (no secrets).
+# Repository variables: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID (identifiers, not secrets).
+# Create one federated credential per subject: pull_request, and environment:dev / environment:prod
+# (see docs/entra-and-oidc.md). Configure required reviewers on the GitHub "prod" environment.
+name: azure-deploy
+on:
+  pull_request:
+    paths: ['track-architect/08-azure-platform/**']
+  push:
+    branches: [main]
+    paths: ['track-architect/08-azure-platform/**']
+
+permissions:
+  id-token: write   # request the OIDC token
+  contents: read
+
+env:
+  INFRA_DIR: track-architect/08-azure-platform
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          az bicep install
+          az bicep build --file $INFRA_DIR/main.bicep --stdout > /dev/null
+          az bicep lint --file $INFRA_DIR/main.bicep
+
+  what-if:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: dev-whatif          # federated subject: environment:dev-whatif (Reader-level identity recommended)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: |
+          az deployment group what-if -g rg-adflow-dev \
+            -f $INFRA_DIR/main.bicep -p $INFRA_DIR/params/dev.bicepparam -p deployApps=false
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/main'
+    needs: what-if
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - run: |
+          az deployment group create -g rg-adflow-dev \
+            -f $INFRA_DIR/main.bicep -p $INFRA_DIR/params/dev.bicepparam -p deployApps=false
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: prod                # required reviewers configured on this environment
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_PROD }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID_PROD }}
+      - run: |
+          az deployment group create -g rg-adflow-prod \
+            -f $INFRA_DIR/main.bicep -p $INFRA_DIR/params/prod.bicepparam -p deployApps=false

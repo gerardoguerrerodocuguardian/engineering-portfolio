@@ -1,0 +1,212 @@
+# Azure DevOps multi-stage pipeline: build -> test -> bicep what-if -> deploy (dev, then prod with approvals).
+# Service connections must be "Azure Resource Manager" using Workload Identity Federation
+# (app registration or managed identity, OIDC) - no client secret exists. See docs/entra-and-oidc.md.
+# Approvals/checks are configured on the Azure DevOps *Environments* (adflow-dev, adflow-prod), not in YAML.
+# NOT executed in the authoring environment.
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include: [track-architect/08-azure-platform/*]
+
+pr:
+  branches:
+    include: [main]
+
+parameters:
+  - name: buildPool            # prod ACR has public access disabled: use a pool with VNet line-of-sight
+    type: string
+    default: Azure Pipelines
+  - name: appDir               # directory holding the NestJS app + Dockerfile (not part of this project)
+    type: string
+    default: app
+
+variables:
+  infraDir: track-architect/08-azure-platform
+  imageTag: $(Build.BuildId)
+  devConnection: sc-adflow-dev-wif
+  prodConnection: sc-adflow-prod-wif
+  devRg: rg-adflow-dev
+  prodRg: rg-adflow-prod
+
+stages:
+  - stage: Build
+    displayName: Build and lint
+    jobs:
+      - job: bicep
+        pool:
+          ${{ if eq(parameters.buildPool, 'Azure Pipelines') }}:
+            vmImage: ubuntu-latest
+          ${{ else }}:
+            name: ${{ parameters.buildPool }}
+        steps:
+          - script: |
+              az bicep install
+              az bicep build --file $(infraDir)/main.bicep --stdout > /dev/null
+              az bicep lint --file $(infraDir)/main.bicep
+            displayName: Bicep build and lint
+          - publish: $(infraDir)
+            artifact: infra
+
+      - job: image
+        dependsOn: []
+        pool:
+          ${{ if eq(parameters.buildPool, 'Azure Pipelines') }}:
+            vmImage: ubuntu-latest
+          ${{ else }}:
+            name: ${{ parameters.buildPool }}
+        steps:
+          # Builds the image; pushing happens in the deploy stage per environment registry.
+          - script: docker build -t adflow-app:$(imageTag) ${{ parameters.appDir }}
+            displayName: Docker build
+
+  - stage: Test
+    displayName: Test
+    dependsOn: Build
+    jobs:
+      - job: unit
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '20.x'
+          - script: |
+              cd ${{ parameters.appDir }}
+              npm ci
+              npm run lint --if-present
+              npm test -- --ci
+            displayName: NestJS lint and unit tests
+
+  - stage: WhatIf
+    displayName: Bicep what-if (dev)
+    dependsOn: Test
+    jobs:
+      - job: whatif
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - download: current
+            artifact: infra
+          - task: AzureCLI@2
+            displayName: az deployment group what-if
+            inputs:
+              azureSubscription: $(devConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az deployment group what-if \
+                  --resource-group $(devRg) \
+                  --template-file $(Pipeline.Workspace)/infra/main.bicep \
+                  --parameters $(Pipeline.Workspace)/infra/params/dev.bicepparam \
+                  --result-format FullResourcePayloads
+
+  - stage: DeployDev
+    displayName: Deploy dev
+    dependsOn: WhatIf
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: dev
+        environment: adflow-dev          # no approval required
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: infra
+                - checkout: self
+                - task: AzureCLI@2
+                  displayName: Deploy infrastructure (apps off)
+                  inputs:
+                    azureSubscription: $(devConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az deployment group create -g $(devRg) \
+                        -f $(Pipeline.Workspace)/infra/main.bicep \
+                        -p $(Pipeline.Workspace)/infra/params/dev.bicepparam \
+                        -p deployApps=false
+                - task: AzureCLI@2
+                  displayName: Build and push image (ACR Tasks)
+                  inputs:
+                    azureSubscription: $(devConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      ACR=$(az acr list -g $(devRg) --query "[0].name" -o tsv)
+                      az acr build -r "$ACR" -t adflow-app:$(imageTag) ${{ parameters.appDir }}
+                      echo "##vso[task.setvariable variable=acrServer]$ACR.azurecr.io"
+                - task: AzureCLI@2
+                  displayName: Deploy apps
+                  inputs:
+                    azureSubscription: $(devConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az deployment group create -g $(devRg) \
+                        -f $(Pipeline.Workspace)/infra/main.bicep \
+                        -p $(Pipeline.Workspace)/infra/params/dev.bicepparam \
+                        -p deployApps=true \
+                           apiImage=$(acrServer)/adflow-app:$(imageTag) \
+                           workerImage=$(acrServer)/adflow-app:$(imageTag)
+
+  - stage: DeployProd
+    displayName: Deploy prod
+    dependsOn: DeployDev
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: prod
+        environment: adflow-prod         # approvals + branch control + business-hours check configured here
+        pool:
+          ${{ if eq(parameters.buildPool, 'Azure Pipelines') }}:
+            vmImage: ubuntu-latest
+          ${{ else }}:
+            name: ${{ parameters.buildPool }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: infra
+                - checkout: self
+                - task: AzureCLI@2
+                  displayName: What-if (prod)
+                  inputs:
+                    azureSubscription: $(prodConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az deployment group what-if -g $(prodRg) \
+                        -f $(Pipeline.Workspace)/infra/main.bicep \
+                        -p $(Pipeline.Workspace)/infra/params/prod.bicepparam \
+                        -p deployApps=false
+                - task: AzureCLI@2
+                  displayName: Build and push image (ACR Tasks / agent in VNet)
+                  inputs:
+                    azureSubscription: $(prodConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      ACR=$(az acr list -g $(prodRg) --query "[0].name" -o tsv)
+                      # Prod registry has public access disabled: run this from the VNet-attached pool and use docker push
+                      # (ACR Tasks cannot reach a private-only registry without extra setup).
+                      az acr login -n "$ACR"
+                      docker build -t "$ACR.azurecr.io/adflow-app:$(imageTag)" ${{ parameters.appDir }}
+                      docker push "$ACR.azurecr.io/adflow-app:$(imageTag)"
+                      echo "##vso[task.setvariable variable=acrServer]$ACR.azurecr.io"
+                - task: AzureCLI@2
+                  displayName: Deploy infrastructure and apps
+                  inputs:
+                    azureSubscription: $(prodConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az deployment group create -g $(prodRg) \
+                        -f $(Pipeline.Workspace)/infra/main.bicep \
+                        -p $(Pipeline.Workspace)/infra/params/prod.bicepparam \
+                        -p deployApps=true \
+                           apiImage=$(acrServer)/adflow-app:$(imageTag) \
+                           workerImage=$(acrServer)/adflow-app:$(imageTag)

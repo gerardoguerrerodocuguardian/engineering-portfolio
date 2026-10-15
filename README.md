@@ -1,5 +1,7 @@
 # Engineering Portfolio — Gerardo Guerrero
 
+[![CI](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions/workflows/ad-bidding-platform.yml/badge.svg)](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions) [![CodeQL](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions/workflows/codeql.yml/badge.svg)](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions/workflows/codeql.yml) ![License](https://img.shields.io/badge/license-MIT-blue)
+
 Software architect and full-stack engineer with **23 years of experience** in Java/Spring Boot, TypeScript (Angular, React/Next.js, NestJS), cloud-native architecture (AWS, GCP, Azure), event-driven systems and LLM/agent integration.
 
 This repository contains small, runnable, tested projects that demonstrate how I design and build software. All of them share **one fictional domain — AdFlow, a sponsored-product ad platform** — so you can see how the pieces fit into a single system. Everything is synthetic: no employer or client code, data or names are included.

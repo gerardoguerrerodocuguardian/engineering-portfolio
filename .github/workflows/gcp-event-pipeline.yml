@@ -1,0 +1,24 @@
+name: gcp-event-pipeline
+on:
+  workflow_dispatch:
+  push:
+    paths: ['track-architect/07-gcp-event-pipeline/**', 'shared/contracts/**']
+  pull_request:
+    paths: ['track-architect/07-gcp-event-pipeline/**', 'shared/contracts/**']
+jobs:
+  verify:
+    runs-on: ubuntu-latest   # Docker is available, so the Pub/Sub emulator integration test runs
+    defaults:
+      run:
+        working-directory: track-architect/07-gcp-event-pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21', cache: maven }
+      - run: mvn -B verify
+      - name: Surface test failures as annotations
+        if: failure()
+        run: |
+          for f in target/surefire-reports/*.txt target/failsafe-reports/*.txt; do
+            [ -f "$f" ] && grep -E "FAIL|ERROR|Caused by|Exception" "$f" | head -8 | while read -r l; do echo "::error::$(basename $f): ${l:0:300}"; done
+          done
