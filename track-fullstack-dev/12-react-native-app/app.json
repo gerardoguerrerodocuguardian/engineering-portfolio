@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "AdFlow Mobile",
+    "slug": "adflow-mobile",
+    "version": "1.0.0",
+    "scheme": "adflow",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "plugins": ["expo-router", "expo-secure-store"],
+    "web": { "bundler": "metro", "output": "single" },
+    "ios": { "supportsTablet": true, "bundleIdentifier": "dev.example.adflow.mobile" },
+    "android": { "package": "dev.example.adflow.mobile" }
+  }
+}

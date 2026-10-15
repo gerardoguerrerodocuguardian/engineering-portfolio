@@ -55,3 +55,17 @@ jobs:
         run: |
           docker compose -f observability/docker-compose.yml config -q
           docker run --rm --entrypoint promtool -v "$PWD/observability/prometheus:/p:ro" prom/prometheus:latest check rules /p/alerts.yml
+  bicep:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: track-architect/08-azure-platform
+    steps:
+      - uses: actions/checkout@v4
+      - name: bicep build + lint (compile only, never deploys)
+        run: |
+          az bicep install
+          az bicep build --file main.bicep --stdout > /dev/null
+          for m in modules/*.bicep; do az bicep lint --file "$m"; done
+          az bicep lint --file main.bicep
+          for p in params/*.bicepparam; do az bicep build-params --file "$p" --stdout > /dev/null; done
