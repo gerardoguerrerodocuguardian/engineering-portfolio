@@ -40,7 +40,7 @@ jobs:
         working-directory: track-architect/06-platform-engineering
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v5
       - name: helm lint + template for both services
         run: |
           for v in values-ad-bidding.yaml values-secure-api.yaml; do
