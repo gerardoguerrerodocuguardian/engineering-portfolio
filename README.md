@@ -62,7 +62,7 @@ Azure variant of the platform, Kotlin service, mobile (React Native) client.
 
 ## Verification status
 
-Each project README ends with an honest "not verified" list. CI runs on every push via `.github/workflows`. The Terraform and platform CI examples stay as `ci.yml.example` because they need cloud credentials and a SonarQube server.
+Each project README ends with an honest "not verified" list. CI runs on every push via `.github/workflows` and covers unit/e2e tests, Testcontainers integration tests (Kafka, Postgres, Pub/Sub emulator), a real MongoDB e2e run, Terraform and Bicep validation, Helm/kubeconform and Prometheus rule checks, and CodeQL. The Terraform and platform CI examples stay as `ci.yml.example` because they need cloud credentials and a SonarQube server.
 
 ## License
 

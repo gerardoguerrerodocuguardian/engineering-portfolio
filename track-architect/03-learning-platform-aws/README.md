@@ -108,7 +108,11 @@ CI: copy `ci.yml.example` to `.github/workflows/ci.yml`, deploy the `iam-github-
 
 Not covered by the SPA: single-page-app deep links (a CloudFront Function rewriting unknown paths to `/index.html` is the usual fix).
 
+
+
 ## What was and wasn't validated
+
+> **Update — verified in GitHub Actions** (workflow `iac-and-platform-validate`, runs on every push): `terraform fmt -check`, `init -backend=false` and `validate` pass for `envs/dev` and `envs/prod` on a real Terraform runner. The bullets below describe the original local authoring session, before CI existed; `plan`, `apply`, `tflint` and `checkov` are still not run.
 
 - **Not run: `terraform fmt`, `init`, `validate`, `plan`, `apply`, `tflint`, `checkov`.** Terraform, tflint and checkov were not available in the authoring environment, and downloading them was blocked (network allow-list); Docker was not accessible either. **No claim is made that this code passes `terraform validate` or `fmt -check`, or that it deploys.** Run `make check` before relying on it.
 - What was done: a careful manual review, plus a script-based static check of the module wiring: balanced braces in every `.tf` file; every module argument used by `envs/*` exists as a variable, every required variable is supplied, every `module.x.y` output reference exists; every `var.*`, `local.*`, resource and data reference inside each module resolves to a declaration. This catches typos and wiring mistakes, not provider-schema errors (wrong argument names, invalid values), which only `validate` finds.

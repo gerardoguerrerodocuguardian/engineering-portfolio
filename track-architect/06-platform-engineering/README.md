@@ -47,6 +47,8 @@ Copy `ci.yml.example` to `.github/workflows/ci.yml` and set `SONAR_TOKEN` and `S
 
 ## What was and wasn't validated
 
+> **Update — verified in GitHub Actions** (workflow `iac-and-platform-validate`, runs on every push): `helm lint`/`template` for both values files, `kubeconform`, `docker compose config` and `promtool check rules` on the alert rules all pass in CI. The lists below are from the original local session; containers were still never started and Dockerfiles never built.
+
 Validated (run locally):
 - `helm lint` passed for both values files (helm v4.3.0); `helm template` rendered both.
 - `kubeconform` (k8s 1.30.0): all rendered resources valid; the ServiceMonitor CRD was skipped (no schema). Ingress rendering also checked.

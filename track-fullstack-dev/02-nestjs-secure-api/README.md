@@ -127,6 +127,7 @@ make lint        # ESLint + Prettier check
 ```
 
 - Unit: `TokenService` (signature, expiry, alg=none, refresh rotation), `RolesGuard`, `CampaignsService`.
+- CI runs the e2e suite with `E2E_REQUIRE_MONGO=1`, which turns the fallback below into a hard failure, so the real Mongoose repository, indexes and aggregation pipeline are exercised on every push.
 - E2E: boots the real app against **mongodb-memory-server** (no Docker). The first run downloads a
   `mongod` binary (needs network; cached afterwards). If the download fails (offline or proxied
   environments) the suite automatically falls back to `InMemoryCampaignRepository`, selected through the

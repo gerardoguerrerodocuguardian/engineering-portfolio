@@ -76,6 +76,8 @@ SQL: `sql/01_merge_ad_events.sql`, `sql/02_merge_campaign_daily.sql`, `sql/03_co
 
 ## Not verified
 
+> **Update — verified in GitHub Actions** (workflow `iac-and-platform-validate`, runs on every push): `terraform fmt`/`init`/`validate` pass, and the `gcp-event-pipeline` workflow runs `mvn verify` on a runner with Docker, so the Pub/Sub emulator integration test runs there. The BigQuery sink and SQL were still never executed against real BigQuery. The bullets below are from the original local session.
+
 - `mvn verify` passes: 22 tests, plus the Pub/Sub emulator IT **skipped** because Docker was unavailable here. It compiles but has never run.
 - `BigQueryAggregateSink` and the BigQuery SQL were **never executed** against BigQuery (no project/credentials). DuckDB validates the idempotency contract and the SQL shape only; BigQuery dialect details (JSON functions, parameter typing) are unproven.
 - Terraform: `tofu fmt -check -recursive` passes. `tofu init`/`validate` could not run (provider registry returned 403), so resources, argument names and provider-version compatibility are unvalidated; nothing was planned or applied.
