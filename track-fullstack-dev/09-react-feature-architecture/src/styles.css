@@ -1,0 +1,29 @@
+:root { font-family: system-ui, sans-serif; color: #1a1a1a; background: #f6f7f9; }
+body { margin: 0; }
+header { display: flex; gap: 1rem; align-items: center; padding: 0.75rem 1.5rem; background: #14213d; color: #fff; }
+header a, header label { color: #fff; }
+header nav { flex: 1; }
+main { max-width: 56rem; margin: 1.5rem auto; padding: 0 1rem; }
+main:focus { outline: none; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; }
+.skip { position: absolute; left: -999px; background: #fff; color: #000; padding: 0.5rem; }
+.skip:focus { left: 0.5rem; top: 0.5rem; z-index: 10; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.card { background: #fff; border: 1px solid #d5d9e0; border-radius: 6px; padding: 1rem; margin: 1rem 0; }
+.narrow { max-width: 24rem; }
+.field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; }
+.error { color: #a4161a; margin: 0; }
+.hint { color: #4a5160; font-size: 0.9rem; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #e3e6ec; }
+.actions { display: flex; gap: 0.75rem; align-items: center; }
+.pager { display: flex; gap: 1rem; align-items: center; margin-top: 0.75rem; }
+.toolbar { margin-bottom: 0.75rem; }
+.skeleton-row { height: 2.5rem; margin-bottom: 0.25rem; background: linear-gradient(90deg, #e6e8ee, #f2f3f6, #e6e8ee); border-radius: 4px; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 1rem; min-height: 5rem; }
+.metrics dt { color: #4a5160; } .metrics dd { margin: 0; font-size: 1.5rem; font-weight: 600; }
+.toast { position: fixed; bottom: 1rem; right: 1rem; min-width: 1px; padding: 0 0.5rem; background: #14213d; color: #fff; border-radius: 4px; }
+.toast:empty { display: none; }
+button { padding: 0.4rem 0.9rem; cursor: pointer; }
+@media (prefers-reduced-motion: no-preference) { .skeleton-row { animation: pulse 1.4s ease-in-out infinite; } }
+@keyframes pulse { 50% { opacity: 0.55; } }

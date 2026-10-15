@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: ad-bidding-platform
+  datasource:
+    url: jdbc:postgresql://localhost:5432/adflow
+    username: adflow
+    password: adflow
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: adflow-bidding
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+
+adflow:
+  topics:
+    ad-events: adflow.ad-events
+    budget-events: adflow.budget-events
+  outbox:
+    poll-interval-ms: 500
+    batch-size: 50
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

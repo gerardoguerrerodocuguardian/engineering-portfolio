@@ -1,0 +1,48 @@
+# Copy to .github/workflows/ci.yml (at the repository root, adjusting working-directory).
+name: nextjs-storefront
+on:
+  push:
+    paths: ['track-fullstack-dev/04-nextjs-storefront/**', 'shared/contracts/**']
+  pull_request:
+    paths: ['track-fullstack-dev/04-nextjs-storefront/**', 'shared/contracts/**']
+
+defaults:
+  run:
+    working-directory: track-fullstack-dev/04-nextjs-storefront
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: track-fullstack-dev/04-nextjs-storefront/package-lock.json
+      - run: npm ci
+      - name: Contract types are up to date
+        run: npm run gen:types && git diff --exit-code src/lib/campaigns/api.generated.ts
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:ci
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: track-fullstack-dev/04-nextjs-storefront/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: track-fullstack-dev/04-nextjs-storefront/test-results

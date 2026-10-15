@@ -1,0 +1,23 @@
+# NestJS service (track-fullstack-dev/02-nestjs-secure-api)
+image:
+  repository: registry.example.invalid/adflow/secure-api
+containerPort: 3000
+configMap:
+  data:
+    NODE_ENV: production
+    PORT: "3000"
+existingSecret: secure-api-secrets   # JWT secret, Mongo URI (created out-of-band)
+probes:
+  startup:   {path: /health, failureThreshold: 12, periodSeconds: 5}
+  readiness: {path: /health}
+  liveness:  {path: /health}
+resources:
+  requests: {cpu: 100m, memory: 128Mi}
+  limits: {memory: 256Mi}
+serviceMonitor:
+  enabled: false   # the sample API does not expose /metrics yet; enable after adding prom-client
+  path: /metrics
+networkPolicy:
+  egress:
+    to:
+      - ports: [{port: 27017, protocol: TCP}]  # MongoDB

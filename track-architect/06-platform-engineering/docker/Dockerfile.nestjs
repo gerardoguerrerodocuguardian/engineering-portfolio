@@ -1,0 +1,20 @@
+# Hardened multi-stage build for NestJS. Build context: track-fullstack-dev/02-nestjs-secure-api
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+FROM deps AS build
+COPY . .
+RUN npm run build && npm prune --omit=dev
+
+FROM gcr.io/distroless/nodejs20-debian12:nonroot
+WORKDIR /app
+ENV NODE_ENV=production PORT=3000
+COPY --from=build --chown=65532:65532 /app/node_modules ./node_modules
+COPY --from=build --chown=65532:65532 /app/dist ./dist
+COPY --from=build --chown=65532:65532 /app/package.json ./
+USER 65532:65532
+EXPOSE 3000
+# Distroless has no curl/wget: rely on Kubernetes httpGet probes, not Docker HEALTHCHECK.
+CMD ["dist/main.js"]

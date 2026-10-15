@@ -1,0 +1,35 @@
+# Example GitHub Actions workflow. Move to .github/workflows/pos-offline-pwa.yml at the repo root
+# (and keep the working-directory defaults below).
+name: pos-offline-pwa
+on:
+  push:
+    paths: ['track-fullstack-dev/05-pos-offline-pwa/**']
+  pull_request:
+    paths: ['track-fullstack-dev/05-pos-offline-pwa/**']
+defaults:
+  run:
+    working-directory: track-fullstack-dev/05-pos-offline-pwa
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: track-fullstack-dev/05-pos-offline-pwa/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+        env:
+          CI: 'true'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: track-fullstack-dev/05-pos-offline-pwa/test-results

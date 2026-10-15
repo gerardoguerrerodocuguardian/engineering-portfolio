@@ -1,0 +1,28 @@
+{
+  "name": "adflow-bdd-test-suite",
+  "version": "1.0.0",
+  "description": "Black-box BDD + contract tests for the fictional AdFlow Campaign API",
+  "private": true,
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:bdd": "cucumber-js",
+    "test:pact": "tsx --test pact/dashboard.consumer.pact.test.ts",
+    "test:pact:verify": "tsx pact/provider/verify.ts",
+    "api:start": "node -r ts-node/register launcher/start-api.ts",
+    "test:e2e": "tsx scripts/run-against-local-api.ts",
+    "test": "npm run typecheck && npm run test:e2e && npm run test:pact"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.2.0",
+    "@pact-foundation/pact": "^15.0.0",
+    "@types/node": "^22.0.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
+    "typescript": "~5.7.0",
+    "yaml": "^2.6.1"
+  }
+}

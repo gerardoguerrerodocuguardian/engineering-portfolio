@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: AdFlow Campaign API
+  version: 1.0.0
+  description: |
+    Contract shared by the NestJS API (provider), the Angular dashboard and the
+    AI agent (consumers). AdFlow is a fictional ad platform used for demonstration only.
+servers:
+  - url: http://localhost:3000
+security:
+  - bearerAuth: []
+paths:
+  /v1/campaigns:
+    get:
+      summary: List campaigns (paginated)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/CampaignStatus' } }
+      responses:
+        '200':
+          description: A page of campaigns
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, page, pageSize, total]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Campaign' } }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+                  total: { type: integer }
+    post:
+      summary: Create a campaign (role ADVERTISER or ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCampaign' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campaign' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+  /v1/campaigns/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Get one campaign
+      responses:
+        '200':
+          description: The campaign
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campaign' }
+        '404': { $ref: '#/components/responses/Problem' }
+    patch:
+      summary: Update a campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateCampaign' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campaign' }
+        '404': { $ref: '#/components/responses/Problem' }
+    delete:
+      summary: Delete a campaign (role ADMIN)
+      responses:
+        '204': { description: Deleted }
+        '403': { $ref: '#/components/responses/Problem' }
+  /v1/campaigns/{id}/report:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: Aggregated performance report for a campaign
+      responses:
+        '200':
+          description: Report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CampaignReport' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Problem:
+      description: RFC 7807 problem details
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    CampaignStatus:
+      type: string
+      enum: [DRAFT, ACTIVE, PAUSED, EXHAUSTED]
+    Campaign:
+      type: object
+      required: [id, name, status, dailyBudgetCents, maxBidCents, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        status: { $ref: '#/components/schemas/CampaignStatus' }
+        dailyBudgetCents: { type: integer, minimum: 0 }
+        maxBidCents: { type: integer, minimum: 1 }
+        keywords: { type: array, items: { type: string } }
+        createdAt: { type: string, format: date-time }
+    CreateCampaign:
+      type: object
+      required: [name, dailyBudgetCents, maxBidCents]
+      properties:
+        name: { type: string, minLength: 3, maxLength: 120 }
+        dailyBudgetCents: { type: integer, minimum: 0 }
+        maxBidCents: { type: integer, minimum: 1 }
+        keywords: { type: array, items: { type: string } }
+    UpdateCampaign:
+      type: object
+      properties:
+        name: { type: string, minLength: 3, maxLength: 120 }
+        status: { $ref: '#/components/schemas/CampaignStatus' }
+        dailyBudgetCents: { type: integer, minimum: 0 }
+        maxBidCents: { type: integer, minimum: 1 }
+        keywords: { type: array, items: { type: string } }
+    CampaignReport:
+      type: object
+      required: [campaignId, impressions, clicks, spendCents, ctr]
+      properties:
+        campaignId: { type: string }
+        impressions: { type: integer }
+        clicks: { type: integer }
+        spendCents: { type: integer }
+        ctr: { type: number, description: clicks / impressions }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }

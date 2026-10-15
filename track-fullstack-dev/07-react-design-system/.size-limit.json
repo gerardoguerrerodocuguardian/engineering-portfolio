@@ -1,0 +1,4 @@
+[
+  { "name": "JS (ESM, gzip)", "path": "dist/index.js", "gzip": true, "limit": "9 kB" },
+  { "name": "CSS (tokens + components, gzip)", "path": "dist/styles.css", "gzip": true, "limit": "4 kB" }
+]

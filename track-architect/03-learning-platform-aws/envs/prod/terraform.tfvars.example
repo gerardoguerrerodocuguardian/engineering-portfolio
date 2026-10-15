@@ -1,0 +1,10 @@
+# Placeholders only. Never commit real account ids, ARNs of production state, or secrets.
+image_tag                  = "1.0.0"
+site_bucket_suffix         = "prod-222222222222"
+cognito_domain_prefix      = "adflow-learn-prod-example"
+state_bucket_arn           = "arn:aws:s3:::adflow-learning-tfstate-222222222222-us-east-1"
+lock_table_arn             = "arn:aws:dynamodb:us-east-1:222222222222:table/adflow-learning-tflock"
+alb_certificate_arn        = "arn:aws:acm:us-east-1:222222222222:certificate/00000000-0000-0000-0000-000000000000"
+api_origin_domain          = "origin.learn.example.com"
+site_aliases               = ["learn.example.com"]
+cloudfront_certificate_arn = "arn:aws:acm:us-east-1:222222222222:certificate/11111111-1111-1111-1111-111111111111"

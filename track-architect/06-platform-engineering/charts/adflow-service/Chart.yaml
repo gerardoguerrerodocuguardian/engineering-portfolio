@@ -1,0 +1,6 @@
+apiVersion: v2
+name: adflow-service
+description: Generic hardened Helm chart for AdFlow HTTP services (Spring Boot and NestJS). Synthetic/fictional.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

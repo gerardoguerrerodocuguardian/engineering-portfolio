@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+target/
+.angular/
+coverage/
+.env
+*.log
+.DS_Store
+.idea/
+.vscode/

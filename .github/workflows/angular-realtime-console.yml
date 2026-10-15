@@ -1,0 +1,35 @@
+# Example workflow. Move to .github/workflows/angular-realtime-console.yml at the repo root.
+name: angular-realtime-console
+on:
+  push:
+    paths: ['track-fullstack-dev/10-angular-realtime-console/**', 'shared/contracts/ad-events.asyncapi.yaml']
+  pull_request:
+    paths: ['track-fullstack-dev/10-angular-realtime-console/**', 'shared/contracts/ad-events.asyncapi.yaml']
+
+defaults:
+  run:
+    working-directory: track-fullstack-dev/10-angular-realtime-console
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: track-fullstack-dev/10-angular-realtime-console/package-lock.json
+      - run: npm ci
+      - run: npm run test:ci
+      - run: npm run build
+      - run: npm run bench
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+        env:
+          CI: 'true'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: track-fullstack-dev/10-angular-realtime-console/test-results

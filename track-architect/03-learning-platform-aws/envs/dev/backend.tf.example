@@ -1,0 +1,11 @@
+# Copy to backend.tf after applying ../../backend (see docs in the README).
+# Values are placeholders: use your own bucket and table names.
+terraform {
+  backend "s3" {
+    bucket         = "adflow-learning-tfstate-<ACCOUNT_ID>-<REGION>"
+    key            = "learning-platform/dev/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "adflow-learning-tflock"
+    encrypt        = true
+  }
+}

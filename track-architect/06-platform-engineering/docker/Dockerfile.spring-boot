@@ -1,0 +1,21 @@
+# Hardened multi-stage build: Spring Boot 3 layered jar on distroless Java 21.
+# Build context: track-architect/02-ad-bidding-platform
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /workspace
+COPY pom.xml .
+RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
+COPY src ./src
+RUN --mount=type=cache,target=/root/.m2 mvn -B -q package -DskipTests
+RUN java -Djarmode=tools -jar target/*.jar extract --layers --destination /layers
+
+FROM gcr.io/distroless/java21-debian12:nonroot
+WORKDIR /app
+COPY --from=build /layers/dependencies/ ./
+COPY --from=build /layers/spring-boot-loader/ ./
+COPY --from=build /layers/snapshot-dependencies/ ./
+COPY --from=build /layers/application/ ./
+USER 65532:65532
+EXPOSE 8080
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
+# Exec form; no shell exists in distroless. Replace app.jar with the actual extracted jar name.
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

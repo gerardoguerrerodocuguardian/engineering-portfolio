@@ -1,0 +1,40 @@
+{
+  "name": "adflow-nextjs-storefront",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AdFlow Shop: Next.js App Router storefront demonstrating SSG, ISR, SSR, streaming and Server Actions (fictional, synthetic data).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:ci": "vitest run",
+    "gen:types": "openapi-typescript ../../shared/contracts/campaign-api.openapi.yaml -o src/lib/campaigns/api.generated.ts",
+    "e2e": "playwright test",
+    "e2e:install": "playwright install chromium"
+  },
+  "dependencies": {
+    "next": "^16.4.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.4.1",
+    "jsdom": "^27.0.0",
+    "openapi-typescript": "^7.9.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

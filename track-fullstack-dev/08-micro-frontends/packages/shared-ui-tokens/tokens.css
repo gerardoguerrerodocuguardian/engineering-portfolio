@@ -1,0 +1,19 @@
+/* AdFlow design tokens. CSS custom properties inherit through Shadow DOM, so
+   React remotes and Web Component remotes share one visual language without sharing JS. */
+:root {
+  --adflow-color-bg: #f7f8fb;
+  --adflow-color-surface: #ffffff;
+  --adflow-color-text: #1b2333;
+  --adflow-color-muted: #5a6478;
+  --adflow-color-primary: #3b5bdb;
+  --adflow-color-primary-contrast: #ffffff;
+  --adflow-color-danger: #b42318;
+  --adflow-color-danger-bg: #fef3f2;
+  --adflow-color-border: #d5d9e3;
+  --adflow-radius: 8px;
+  --adflow-space-1: 4px;
+  --adflow-space-2: 8px;
+  --adflow-space-3: 16px;
+  --adflow-space-4: 24px;
+  --adflow-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}

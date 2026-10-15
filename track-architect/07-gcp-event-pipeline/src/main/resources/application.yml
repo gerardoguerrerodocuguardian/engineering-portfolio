@@ -1,0 +1,12 @@
+server:
+  port: ${PORT:8080}
+management:
+  endpoints.web.exposure.include: health,info
+adflow:
+  source: ${ADFLOW_SOURCE:memory}   # memory | pubsub | kafka (stub)
+  sink: ${ADFLOW_SINK:memory}       # memory | duckdb | bigquery
+  gcp.project: ${GCP_PROJECT:example-project-id}
+  pubsub:
+    subscription: ${PUBSUB_SUBSCRIPTION:adflow-ad-events-sub}
+    emulator-host: ${PUBSUB_EMULATOR_HOST:}
+  bigquery.dataset: ${BQ_DATASET:adflow_analytics}

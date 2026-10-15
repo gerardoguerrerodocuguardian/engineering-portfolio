@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-01-01T00:00:00Z",
+  "remotes": [
+    {
+      "id": "campaigns", "title": "Campaigns", "kind": "module-federation",
+      "entry": "http://localhost:5171/remoteEntry.js", "version": "1.0.0",
+      "scope": "remote_campaigns", "expose": "./Campaigns",
+      "requires": { "react": "^18.3.1", "react-dom": "^18.3.1" }
+    },
+    {
+      "id": "reports", "title": "Reports", "kind": "web-component",
+      "entry": "http://localhost:5172/adflow-reports.js", "version": "1.0.0",
+      "tag": "adflow-reports", "requires": {}
+    }
+  ]
+}

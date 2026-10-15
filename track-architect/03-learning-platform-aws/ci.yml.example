@@ -1,0 +1,81 @@
+# Copy to .github/workflows/ci.yml in the repository that owns this stack.
+# Auth is GitHub OIDC -> short-lived AWS credentials. There are NO static keys.
+name: terraform-ci
+
+on:
+  pull_request:
+    paths: ["track-architect/03-learning-platform-aws/**"]
+
+permissions:
+  id-token: write      # request the OIDC token
+  contents: read
+  pull-requests: write # post the plan comment
+
+defaults:
+  run:
+    working-directory: track-architect/03-learning-platform-aws
+
+env:
+  TF_VERSION: "1.9.8"
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - name: fmt
+        run: terraform fmt -check -recursive -diff
+      - name: validate (no credentials, no backend)
+        run: |
+          for d in envs/dev envs/prod backend; do
+            terraform -chdir="$d" init -backend=false -input=false
+            terraform -chdir="$d" validate
+          done
+      - uses: terraform-linters/setup-tflint@v4
+      - name: tflint
+        run: |
+          tflint --init
+          for d in envs/dev envs/prod backend modules/*; do tflint --chdir="$d"; done
+      - name: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: track-architect/03-learning-platform-aws
+          config_file: track-architect/03-learning-platform-aws/.checkov.yaml
+
+  plan:
+    needs: static
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev, prod]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Read-only plan role from modules/iam-github-oidc. Store the ARN as a
+          # repository variable (not a secret); it is an identifier, not a credential.
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: init (remote backend)
+        run: terraform -chdir=envs/${{ matrix.env }} init -input=false
+      - name: plan
+        env:
+          # Non-secret identifiers kept as repository/environment variables.
+          TF_VAR_image_tag: ${{ vars.IMAGE_TAG }}
+          TF_VAR_site_bucket_suffix: ${{ vars.SITE_BUCKET_SUFFIX }}
+          TF_VAR_cognito_domain_prefix: ${{ vars.COGNITO_DOMAIN_PREFIX }}
+          TF_VAR_state_bucket_arn: ${{ vars.STATE_BUCKET_ARN }}
+          TF_VAR_lock_table_arn: ${{ vars.LOCK_TABLE_ARN }}
+          # prod additionally needs alb_certificate_arn, api_origin_domain and
+          # site_aliases (see envs/prod/terraform.tfvars.example).
+        run: terraform -chdir=envs/${{ matrix.env }} plan -input=false -lock=false -no-color | tee plan.txt
+      # Apply is deliberately NOT in this workflow. Run it from a separate workflow
+      # bound to a protected GitHub Environment (manual approval), using the apply
+      # role, whose OIDC sub is restricted to that environment.

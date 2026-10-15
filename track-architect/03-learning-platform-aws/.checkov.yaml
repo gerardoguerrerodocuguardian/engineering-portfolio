@@ -1,0 +1,18 @@
+framework:
+  - terraform
+directory:
+  - modules
+  - envs
+  - backend
+compact: true
+quiet: true
+# Documented, intentional exceptions (see README "Security decisions"). The check
+# ids below were written from memory and have NOT been run in this repository's
+# authoring environment: confirm them against your checkov version.
+skip-check:
+  - CKV_AWS_68    # WAF on CloudFront: out of scope for the baseline (see ADR 0002 follow-ups)
+  - CKV_AWS_86    # CloudFront access logs: needs a log bucket; listed as a next step
+  - CKV_AWS_310   # CloudFront origin failover: single API origin by design
+  - CKV_AWS_374   # CloudFront geo restriction: product decision, none by default
+  - CKV_AWS_91    # ALB access logs: needs a log bucket; listed as a next step
+  - CKV2_AWS_47   # WAFv2 Log4j rule on CloudFront: no WAF in the baseline

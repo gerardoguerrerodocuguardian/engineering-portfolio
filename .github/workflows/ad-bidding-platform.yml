@@ -1,0 +1,22 @@
+# Move to .github/workflows/ad-bidding-platform.yml at the repository root.
+name: ad-bidding-platform
+on:
+  push:
+    paths: ["track-architect/02-ad-bidding-platform/**"]
+  pull_request:
+    paths: ["track-architect/02-ad-bidding-platform/**"]
+jobs:
+  verify:
+    runs-on: ubuntu-latest   # Docker is available, so the Testcontainers IT runs
+    defaults:
+      run:
+        working-directory: track-architect/02-ad-bidding-platform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - run: mvn -B verify
+      # Quality gate placeholder: add `mvn sonar:sonar` with a SONAR_TOKEN secret to enforce coverage/smells.

@@ -1,0 +1,35 @@
+# Copy to .github/workflows/bdd-test-suite.yml in a repo that contains both projects.
+name: bdd-test-suite
+on:
+  pull_request:
+    paths: ['track-fullstack-dev/06-bdd-test-suite/**', 'track-fullstack-dev/02-nestjs-secure-api/**', 'shared/contracts/**']
+  workflow_dispatch:
+
+jobs:
+  acceptance-and-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: 'track-fullstack-dev/*/package-lock.json' }
+      - name: Install API under test and the suite
+        run: |
+          npm ci --prefix track-fullstack-dev/02-nestjs-secure-api
+          npm ci --prefix track-fullstack-dev/06-bdd-test-suite
+      - name: Quality gate - typecheck, BDD suite (boots API in-memory), consumer pact
+        working-directory: track-fullstack-dev/06-bdd-test-suite
+        run: make test
+      - name: Optional - provider verification of the pact
+        working-directory: track-fullstack-dev/06-bdd-test-suite
+        run: make pact-verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: |
+            track-fullstack-dev/06-bdd-test-suite/reports
+            track-fullstack-dev/06-bdd-test-suite/pacts
+
+  # Against a deployed environment instead of the local launcher:
+  # run: make test-remote BASE_URL=${{ vars.STAGING_URL }}

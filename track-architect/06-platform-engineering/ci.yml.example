@@ -1,0 +1,70 @@
+# Copy to .github/workflows/ci.yml. Secrets are referenced by name only.
+name: ci
+on:
+  pull_request:
+  push: {branches: [main]}
+permissions:
+  contents: read
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}      # SonarQube needs full history for blame/new code
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: "21", cache: maven}
+      - name: Build and test
+        working-directory: track-architect/02-ad-bidding-platform
+        run: mvn -B verify
+      - name: SonarQube scan (quality gate blocks the build)
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: track-architect/02-ad-bidding-platform
+          args: -Dsonar.qualitygate.wait=true
+      - name: Build image
+        run: docker build -f track-architect/06-platform-engineering/docker/Dockerfile.spring-boot -t adflow/ad-bidding-platform:${{ github.sha }} track-architect/02-ad-bidding-platform
+      - name: Trivy image scan (fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: adflow/ad-bidding-platform:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+      - name: Save image
+        run: docker save adflow/ad-bidding-platform:${{ github.sha }} -o image.tar
+      - uses: actions/upload-artifact@v4
+        with: {name: image, path: image.tar}
+  helm-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Lint and render both services
+        working-directory: track-architect/06-platform-engineering
+        run: |
+          for f in values-ad-bidding values-secure-api; do
+            helm lint charts/adflow-service -f charts/adflow-service/$f.yaml
+            helm template t charts/adflow-service -f charts/adflow-service/$f.yaml > /dev/null
+          done
+  deploy-kind:
+    needs: [build-test, helm-lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: image}
+      - uses: helm/kind-action@v1
+        with: {cluster_name: adflow}
+      - name: Load image and deploy
+        run: |
+          docker load -i image.tar
+          kind load docker-image adflow/ad-bidding-platform:${{ github.sha }} --name adflow
+          helm upgrade --install bidding track-architect/06-platform-engineering/charts/adflow-service \
+            -f track-architect/06-platform-engineering/charts/adflow-service/values-ad-bidding.yaml \
+            --set image.repository=adflow/ad-bidding-platform --set image.tag=${{ github.sha }} \
+            --set serviceMonitor.enabled=false --set existingSecret="" --set autoscaling.enabled=false --set replicaCount=1 \
+            --set networkPolicy.enabled=false
+          kubectl rollout status deploy/bidding-adflow-service --timeout=180s || true  # needs Postgres/Kafka in a real run

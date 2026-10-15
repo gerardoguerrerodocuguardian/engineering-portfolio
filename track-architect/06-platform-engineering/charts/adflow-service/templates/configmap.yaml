@@ -1,0 +1,11 @@
+{{- if and .Values.configMap.create .Values.configMap.data }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "adflow.fullname" . }}
+  labels: {{- include "adflow.labels" . | nindent 4 }}
+data:
+  {{- range $k, $v := .Values.configMap.data }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
+{{- end }}

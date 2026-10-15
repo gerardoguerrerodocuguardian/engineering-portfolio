@@ -1,0 +1,9 @@
+body { margin: 0; font-family: var(--adflow-font); background: var(--adflow-color-bg); color: var(--adflow-color-text); }
+header { display: flex; gap: var(--adflow-space-3); align-items: center; padding: var(--adflow-space-3); background: var(--adflow-color-surface); border-bottom: 1px solid var(--adflow-color-border); }
+header nav { display: flex; gap: var(--adflow-space-3); }
+header a { color: var(--adflow-color-primary); }
+.spacer { flex: 1; }
+main { padding: var(--adflow-space-4); }
+button { background: var(--adflow-color-primary); color: var(--adflow-color-primary-contrast); border: 0; border-radius: var(--adflow-radius); padding: var(--adflow-space-2) var(--adflow-space-3); cursor: pointer; }
+.remote-fallback { background: var(--adflow-color-danger-bg); border: 1px solid var(--adflow-color-danger); color: var(--adflow-color-danger); border-radius: var(--adflow-radius); padding: var(--adflow-space-3); }
+.muted { color: var(--adflow-color-muted); }

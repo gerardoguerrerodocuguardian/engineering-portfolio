@@ -1,0 +1,27 @@
+# Spring Boot 3 / Java 21 service (track-architect/02-ad-bidding-platform)
+image:
+  repository: registry.example.invalid/adflow/ad-bidding-platform
+containerPort: 8080
+configMap:
+  data:
+    SPRING_PROFILES_ACTIVE: prod
+    SERVER_SHUTDOWN: graceful
+    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,prometheus
+    MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
+    JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
+existingSecret: ad-bidding-secrets   # holds SPRING_DATASOURCE_PASSWORD, Kafka creds (created out-of-band)
+probes:
+  startup:   {path: /actuator/health/liveness,  failureThreshold: 36, periodSeconds: 5}
+  readiness: {path: /actuator/health/readiness}
+  liveness:  {path: /actuator/health/liveness}
+resources:
+  requests: {cpu: 250m, memory: 512Mi}
+  limits: {memory: 768Mi}
+serviceMonitor:
+  enabled: true
+  path: /actuator/prometheus
+networkPolicy:
+  egress:
+    to:
+      - ports: [{port: 5432, protocol: TCP}]   # PostgreSQL
+      - ports: [{port: 9092, protocol: TCP}]   # Kafka

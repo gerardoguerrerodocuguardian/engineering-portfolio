@@ -1,0 +1,27 @@
+# Move to .github/workflows/react-design-system.yml (adjust working-directory/paths) to enable.
+name: react-design-system
+on:
+  push:
+    paths: ['track-fullstack-dev/07-react-design-system/**']
+  pull_request:
+    paths: ['track-fullstack-dev/07-react-design-system/**']
+defaults:
+  run:
+    working-directory: track-fullstack-dev/07-react-design-system
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: track-fullstack-dev/07-react-design-system/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:ci
+      - run: npm run build
+      - run: npm run size
+      - run: npm run build-storybook --if-present

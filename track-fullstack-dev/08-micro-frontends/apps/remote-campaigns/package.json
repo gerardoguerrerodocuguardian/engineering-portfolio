@@ -1,0 +1,5 @@
+{
+  "name": "@adflow/remote-campaigns", "version": "1.0.0", "private": true, "type": "module",
+  "scripts": { "dev": "vite --port 5171 --strictPort", "build": "vite build", "preview": "vite preview --port 5171 --strictPort" },
+  "dependencies": { "@adflow/shared-contracts": "*", "@adflow/shared-ui-tokens": "*", "react": "^18.3.1", "react-dom": "^18.3.1" }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "adflow-ads-analyst-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ads Analyst Agent for the fictional AdFlow platform: manual agentic loop, RAG, guardrails, MCP server, evals.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "ask": "tsx src/cli.ts",
+    "mcp": "tsx src/mcp/server.ts",
+    "eval": "tsx evals/run.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.0",
+    "@modelcontextprotocol/sdk": "^1.20.0",
+    "zod": "^3.25.0",
+    "zod-to-json-schema": "^3.25.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

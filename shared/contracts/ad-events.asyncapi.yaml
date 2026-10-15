@@ -1,0 +1,53 @@
+asyncapi: 2.6.0
+info:
+  title: AdFlow Ad Events
+  version: 1.0.0
+  description: |
+    Events consumed by the Java ad-bidding platform. Delivery is at-least-once, so
+    consumers MUST be idempotent on `eventId`. AdFlow is fictional.
+channels:
+  adflow.ad-events:
+    description: Impressions and clicks, keyed by campaignId (ordering per campaign).
+    subscribe:
+      message:
+        oneOf:
+          - $ref: '#/components/messages/AdImpression'
+          - $ref: '#/components/messages/AdClick'
+  adflow.budget-events:
+    description: Budget state changes emitted by the platform (via transactional outbox).
+    subscribe:
+      message:
+        $ref: '#/components/messages/BudgetExhausted'
+components:
+  messages:
+    AdImpression:
+      name: AdImpression
+      payload:
+        type: object
+        required: [eventId, type, campaignId, costCents, occurredAt]
+        properties:
+          eventId: { type: string, format: uuid }
+          type: { type: string, const: IMPRESSION }
+          campaignId: { type: string }
+          costCents: { type: integer, minimum: 0 }
+          occurredAt: { type: string, format: date-time }
+    AdClick:
+      name: AdClick
+      payload:
+        type: object
+        required: [eventId, type, campaignId, costCents, occurredAt]
+        properties:
+          eventId: { type: string, format: uuid }
+          type: { type: string, const: CLICK }
+          campaignId: { type: string }
+          costCents: { type: integer, minimum: 0 }
+          occurredAt: { type: string, format: date-time }
+    BudgetExhausted:
+      name: BudgetExhausted
+      payload:
+        type: object
+        required: [eventId, campaignId, occurredAt]
+        properties:
+          eventId: { type: string, format: uuid }
+          campaignId: { type: string }
+          occurredAt: { type: string, format: date-time }

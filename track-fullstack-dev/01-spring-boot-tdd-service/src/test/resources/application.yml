@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:billing;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  mvc:
+    problemdetails:
+      enabled: true
+  cache:
+    cache-names: taxRates
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=10m,recordStats
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:1/unused
+
+adflow:
+  tax-client:
+    base-url: http://localhost:1
+    connect-timeout: 200ms
+    read-timeout: 300ms
+    max-attempts: 2
+    retry-wait: 10ms
+    breaker-window-size: 10
+    breaker-minimum-calls: 5
+    breaker-failure-rate-percent: 50
+    breaker-open-duration: 30s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus

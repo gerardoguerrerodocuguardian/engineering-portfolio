@@ -1,0 +1,32 @@
+# Copy to .github/workflows/ci.yml (adjust working-directory to where this project lives).
+name: ads-analyst-agent
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: track-architect/05-ai-agents-claude
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm, cache-dependency-path: track-architect/05-ai-agents-claude/package-lock.json }
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run eval -- --provider fake   # offline, deterministic
+  live-evals:
+    # Optional: only runs when a repository secret is configured. Costs real money.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: track-architect/05-ai-agents-claude
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npm run eval -- --provider anthropic
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

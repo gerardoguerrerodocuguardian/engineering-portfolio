@@ -1,0 +1,6 @@
+# Placeholders only. Never commit real account ids, ARNs of production state, or secrets.
+image_tag             = "0.1.0"
+site_bucket_suffix    = "dev-111111111111"
+cognito_domain_prefix = "adflow-learn-dev-example"
+state_bucket_arn      = "arn:aws:s3:::adflow-learning-tfstate-111111111111-us-east-1"
+lock_table_arn        = "arn:aws:dynamodb:us-east-1:111111111111:table/adflow-learning-tflock"

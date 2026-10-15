@@ -1,0 +1,26 @@
+# Copy to .github/workflows/ci.yml in the repository root (adjust working-directory).
+name: nestjs-secure-api
+on:
+  push:
+    paths: ['track-fullstack-dev/02-nestjs-secure-api/**', 'shared/contracts/**']
+  pull_request:
+    paths: ['track-fullstack-dev/02-nestjs-secure-api/**', 'shared/contracts/**']
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: track-fullstack-dev/02-nestjs-secure-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: track-fullstack-dev/02-nestjs-secure-api/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      # mongodb-memory-server downloads a mongod binary on first run (cached afterwards)
+      - run: npm run test:e2e

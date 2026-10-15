@@ -1,0 +1,28 @@
+# Move to .github/workflows/spring-boot-tdd-service.yml at the monorepo root.
+name: spring-boot-tdd-service
+on:
+  push:
+    paths: ["track-fullstack-dev/01-spring-boot-tdd-service/**", "shared/contracts/campaign-api.openapi.yaml"]
+  pull_request:
+    paths: ["track-fullstack-dev/01-spring-boot-tdd-service/**", "shared/contracts/campaign-api.openapi.yaml"]
+jobs:
+  build:
+    runs-on: ubuntu-latest   # Docker is available, so PostgresContainerIT runs here
+    defaults:
+      run:
+        working-directory: track-fullstack-dev/01-spring-boot-tdd-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - name: Verify (tests, format, ArchUnit, JaCoCo gate)
+        run: mvn -B verify
+      - name: Mutation testing (domain package)
+        run: mvn -B verify -Pmutation -DskipTests=false
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: |
+            track-fullstack-dev/01-spring-boot-tdd-service/target/site/jacoco
+            track-fullstack-dev/01-spring-boot-tdd-service/target/pit-reports

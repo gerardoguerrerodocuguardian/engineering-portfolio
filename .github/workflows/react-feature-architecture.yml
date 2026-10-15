@@ -1,0 +1,28 @@
+# Move to .github/workflows/09-react-feature-architecture.yml
+name: react-feature-architecture
+on:
+  push:
+    paths: ['track-fullstack-dev/09-react-feature-architecture/**', 'shared/contracts/**']
+  pull_request:
+    paths: ['track-fullstack-dev/09-react-feature-architecture/**', 'shared/contracts/**']
+defaults:
+  run:
+    working-directory: track-fullstack-dev/09-react-feature-architecture
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: track-fullstack-dev/09-react-feature-architecture/package-lock.json
+      - run: npm ci
+      - run: npm run check:types      # generated types match the contract
+      - run: npm run lint             # includes the feature-boundaries rule
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build            # fails if the gzip budget is exceeded
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e

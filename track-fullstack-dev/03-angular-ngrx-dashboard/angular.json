@@ -1,0 +1,54 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": { "analytics": false },
+  "newProjectRoot": "projects",
+  "projects": {
+    "adflow-dashboard": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "server": "src/main.server.ts",
+            "outputMode": "static",
+            "tsConfig": "tsconfig.app.json",
+            "polyfills": ["zone.js"],
+            "assets": [{ "glob": "**/*", "input": "public" }],
+            "styles": ["src/styles.css"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                { "type": "initial", "maximumWarning": "600kB", "maximumError": "1MB" },
+                { "type": "anyComponentStyle", "maximumWarning": "8kB", "maximumError": "16kB" }
+              ],
+              "outputHashing": "all",
+              "fileReplacements": []
+            },
+            "nestjs": {
+              "fileReplacements": [
+                { "replace": "src/environments/environment.ts", "with": "src/environments/environment.nestjs.ts" }
+              ]
+            },
+            "development": { "optimization": false, "extractLicenses": false, "sourceMap": true }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": { "buildTarget": "adflow-dashboard:build:production" },
+            "development": { "buildTarget": "adflow-dashboard:build:development" },
+            "nestjs": { "buildTarget": "adflow-dashboard:build:development,nestjs" }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  }
+}

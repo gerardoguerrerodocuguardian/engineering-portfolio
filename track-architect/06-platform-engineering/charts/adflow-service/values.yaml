@@ -1,0 +1,112 @@
+# Defaults are production-leaning; per-service files override them.
+nameOverride: ""
+fullnameOverride: ""
+replicaCount: 2
+
+image:
+  repository: registry.example.invalid/adflow/service
+  tag: ""            # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+containerPort: 8080
+service:
+  type: ClusterIP
+  port: 80
+
+serviceAccount:
+  create: true
+  automountToken: false
+  annotations: {}   # e.g. IRSA / Workload Identity annotation
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# Writable scratch space, required because rootfs is read-only.
+tmpDirSizeLimit: 128Mi
+
+env: []            # plain name/value list
+configMap:
+  create: true
+  data: {}         # rendered as ConfigMap and mounted via envFrom
+existingSecret: "" # name of a pre-created Secret (ESO, sealed-secrets, ...) used via envFrom
+extraEnvFrom: []
+
+probes:
+  startup:
+    path: /health
+    failureThreshold: 30
+    periodSeconds: 5
+  readiness:
+    path: /health
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+  liveness:
+    path: /health
+    periodSeconds: 20
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {memory: 512Mi}
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: null
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+  ingressFrom:                 # namespace labels allowed to call the service
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+  egress:
+    dns: true
+    to: []                     # extra egress rules (databases, brokers...)
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  host: service.adflow.example.invalid
+  path: /
+  pathType: Prefix
+  tls:
+    enabled: false
+    secretName: ""
+
+serviceMonitor:
+  enabled: false               # requires the Prometheus Operator CRDs
+  path: /metrics
+  interval: 30s
+  labels: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: true
