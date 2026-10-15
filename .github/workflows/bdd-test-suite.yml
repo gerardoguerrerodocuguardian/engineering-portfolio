@@ -23,7 +23,7 @@ jobs:
       - name: Optional - provider verification of the pact
         working-directory: track-fullstack-dev/06-bdd-test-suite
         run: make pact-verify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: reports
