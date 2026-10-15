@@ -1,6 +1,7 @@
 # Move to .github/workflows/spring-boot-tdd-service.yml at the monorepo root.
 name: spring-boot-tdd-service
 on:
+  workflow_dispatch:
   push:
     paths: ["track-fullstack-dev/01-spring-boot-tdd-service/**", "shared/contracts/campaign-api.openapi.yaml"]
   pull_request:

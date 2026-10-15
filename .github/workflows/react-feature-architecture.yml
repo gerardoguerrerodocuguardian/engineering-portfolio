@@ -1,6 +1,7 @@
 # Move to .github/workflows/09-react-feature-architecture.yml
 name: react-feature-architecture
 on:
+  workflow_dispatch:
   push:
     paths: ['track-fullstack-dev/09-react-feature-architecture/**', 'shared/contracts/**']
   pull_request:

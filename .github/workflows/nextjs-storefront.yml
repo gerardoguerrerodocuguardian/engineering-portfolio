@@ -1,6 +1,7 @@
 # Copy to .github/workflows/ci.yml (at the repository root, adjusting working-directory).
 name: nextjs-storefront
 on:
+  workflow_dispatch:
   push:
     paths: ['track-fullstack-dev/04-nextjs-storefront/**', 'shared/contracts/**']
   pull_request:

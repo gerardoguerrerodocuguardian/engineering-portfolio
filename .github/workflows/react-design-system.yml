@@ -1,6 +1,7 @@
 # Move to .github/workflows/react-design-system.yml (adjust working-directory/paths) to enable.
 name: react-design-system
 on:
+  workflow_dispatch:
   push:
     paths: ['track-fullstack-dev/07-react-design-system/**']
   pull_request:

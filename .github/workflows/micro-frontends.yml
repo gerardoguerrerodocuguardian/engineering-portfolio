@@ -2,6 +2,7 @@
 # Each remote is built and could be deployed by its own job; the shell only needs the manifest to change.
 name: micro-frontends
 on:
+  workflow_dispatch:
   pull_request:
     paths: ['track-fullstack-dev/08-micro-frontends/**']
 defaults:

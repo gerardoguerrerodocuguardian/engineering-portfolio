@@ -2,6 +2,7 @@
 # (and keep the working-directory defaults below).
 name: pos-offline-pwa
 on:
+  workflow_dispatch:
   push:
     paths: ['track-fullstack-dev/05-pos-offline-pwa/**']
   pull_request:

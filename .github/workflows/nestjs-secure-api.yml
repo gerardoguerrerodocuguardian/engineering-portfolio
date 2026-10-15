@@ -1,6 +1,7 @@
 # Copy to .github/workflows/ci.yml in the repository root (adjust working-directory).
 name: nestjs-secure-api
 on:
+  workflow_dispatch:
   push:
     paths: ['track-fullstack-dev/02-nestjs-secure-api/**', 'shared/contracts/**']
   pull_request:

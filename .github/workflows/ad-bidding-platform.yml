@@ -1,6 +1,7 @@
 # Move to .github/workflows/ad-bidding-platform.yml at the repository root.
 name: ad-bidding-platform
 on:
+  workflow_dispatch:
   push:
     paths: ["track-architect/02-ad-bidding-platform/**"]
   pull_request:

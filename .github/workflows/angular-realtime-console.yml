@@ -1,6 +1,7 @@
 # Example workflow. Move to .github/workflows/angular-realtime-console.yml at the repo root.
 name: angular-realtime-console
 on:
+  workflow_dispatch:
   push:
     paths: ['track-fullstack-dev/10-angular-realtime-console/**', 'shared/contracts/ad-events.asyncapi.yaml']
   pull_request:

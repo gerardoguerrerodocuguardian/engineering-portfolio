@@ -1,6 +1,7 @@
 # Copy to .github/workflows/ci.yml (at the repository root, adjusting working-directory).
 name: angular-ngrx-dashboard
 on:
+  workflow_dispatch:
   push:
     paths: ['track-fullstack-dev/03-angular-ngrx-dashboard/**', 'shared/contracts/**']
   pull_request:
