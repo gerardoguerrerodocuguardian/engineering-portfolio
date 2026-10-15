@@ -97,6 +97,8 @@ Before first use: replace the placeholder `entraApiAudience` and PostgreSQL admi
 
 ## What was and wasn't validated
 
+> **Update — verified in GitHub Actions** (workflow `iac-and-platform-validate`): `az bicep build` and `az bicep lint` pass for `main.bicep` and every module, and both `.bicepparam` files compile. `what-if`, deployment and `azure-pipelines.yml` execution have still not been run. The first bullet below describes the original local session.
+
 - **Not run: `bicep build`, `bicep lint`, `what-if`, deploy, pipeline YAML validation.** The Bicep CLI and Azure CLI were not installed, `brew` had no formula for bicep, and downloading the binary from GitHub was blocked by the sandbox allow-list. **No claim is made that these templates compile, lint clean or deploy.**
 - What was done: a careful manual review plus a script check that every module call passes only parameters the module declares, supplies all required parameters, every `module.outputs.x` reference exists, parameter files cover all required `main.bicep` parameters, and brackets are balanced.
 - Likely first-run fixes: API versions and the `identity` field of the KEDA custom scale rule may need adjusting to current schemas; `cidrSubnet` needs a recent Bicep; lint rule warnings (e.g. secure-parameter or no-hardcoded-env-urls); mixing a `.bicepparam` file with inline `-p key=value` overrides depends on Azure CLI version (if rejected, use a second param file or env-specific `readEnvironmentVariable`).
