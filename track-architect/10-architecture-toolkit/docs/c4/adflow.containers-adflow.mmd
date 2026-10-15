@@ -1,0 +1,22 @@
+C4Container
+  title AdFlow - Containers of AdFlow Platform
+  Person(advertiser, "Advertiser", "Creates campaigns, sets budgets and bids")
+  Person(shopper, "Shopper", "Sees sponsored products and clicks")
+  System_Ext(idp, "Identity Provider", "OAuth2 / OIDC")
+  System_Ext(llm, "LLM Provider", "Model API used by the analyst assistant")
+  System_Boundary(adflow_boundary, "AdFlow Platform") {
+    Container(dashboard, "Angular dashboard", "Angular, NgRx", "Campaign management UI")
+    Container(agent, "Ads Analyst Agent", "TypeScript", "Read-only analyst assistant with budgets and evals")
+    Container(campaign_api, "Campaign API", "NestJS, MongoDB", "Campaign CRUD and reporting, OpenAPI contract")
+    Container(bidding, "Ad Bidding Platform", "Spring Boot, PostgreSQL", "Bid decisions, budgets, idempotent event processing")
+    Container(kafka, "Event backbone", "Kafka", "adflow.ad-events and adflow.budget-events topics")
+  }
+  Rel(advertiser, dashboard, "Manages campaigns", "HTTPS")
+  Rel(shopper, kafka, "Impressions and clicks", "HTTPS")
+  Rel(dashboard, campaign_api, "Calls", "OpenAPI / JSON")
+  Rel(agent, campaign_api, "Reads campaigns via tools", "OpenAPI / JSON")
+  Rel(campaign_api, bidding, "Publishes campaign state", "HTTPS")
+  Rel(kafka, bidding, "Delivers impressions and clicks", "AsyncAPI")
+  Rel(bidding, kafka, "BudgetExhausted via outbox", "AsyncAPI")
+  Rel(campaign_api, idp, "Validates tokens", "OIDC")
+  Rel(agent, llm, "Prompts", "HTTPS")

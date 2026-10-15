@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions/workflows/ad-bidding-platform.yml/badge.svg)](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions) [![CodeQL](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions/workflows/codeql.yml/badge.svg)](https://github.com/gerardoguerrerodocuguardian/engineering-portfolio/actions/workflows/codeql.yml) ![License](https://img.shields.io/badge/license-MIT-blue)
 
-Software architect and full-stack engineer with **23 years of experience** in Java/Spring Boot, TypeScript (Angular, React/Next.js, NestJS), cloud-native architecture (AWS, GCP, Azure), event-driven systems and LLM/agent integration.
+Software architect and full-stack engineer with **23 years of experience** in Java/Spring Boot, Python, TypeScript (Angular, React/Next.js, NestJS), cloud-native architecture (AWS, GCP, Azure), event-driven systems and LLM/agent integration.
 
 This repository contains small, runnable, tested projects that demonstrate how I design and build software. All of them share **one fictional domain — AdFlow, a sponsored-product ad platform** — so you can see how the pieces fit into a single system. Everything is synthetic: no employer or client code, data or names are included.
 
@@ -39,6 +39,9 @@ Every project README has an **"Experience this project reflects"** section that 
 | [08 Azure platform](track-architect/08-azure-platform) | Bicep, Container Apps, Service Bus, Key Vault, Azure DevOps | Cross-cloud mapping (AWS / GCP / Azure), managed identity, KEDA scaling |
 | [11 Kotlin coroutines service](track-fullstack-dev/11-kotlin-coroutines-service) | Kotlin 2, Ktor, coroutines/Flow, Kotest | Scatter/gather auction, sealed results, virtual-time tests |
 | [12 React Native app](track-fullstack-dev/12-react-native-app) | Expo, expo-router, TanStack Query | Mobile architecture, optimistic updates, offline cache |
+| [09 Python data pipeline](track-architect/09-python-data-pipeline) | Python, DuckDB, Polars, Pydantic | Idempotent loads, late data, quarantine, data-quality checks |
+| [10 Architecture toolkit](track-architect/10-architecture-toolkit) | Python CLI (`archkit`) | ADR lint, dependency rules, C4 from model, contract drift detection |
+| [13 FastAPI reporting service](track-fullstack-dev/13-python-fastapi-service) | FastAPI, Pydantic v2, async SQLAlchemy | JWT scopes, problem+json, SSE, mypy strict, 98% coverage |
 
 Shared API and event contracts: [`shared/contracts`](shared/contracts) (OpenAPI + AsyncAPI).
 

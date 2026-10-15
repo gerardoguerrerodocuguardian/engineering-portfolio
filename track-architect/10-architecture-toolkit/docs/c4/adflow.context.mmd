@@ -1,0 +1,11 @@
+C4Context
+  title AdFlow - System Context
+  Person(advertiser, "Advertiser", "Creates campaigns, sets budgets and bids")
+  Person(shopper, "Shopper", "Sees sponsored products and clicks")
+  System(adflow, "AdFlow Platform", "Campaign management, real-time bidding, reporting")
+  System_Ext(idp, "Identity Provider", "OAuth2 / OIDC")
+  System_Ext(llm, "LLM Provider", "Model API used by the analyst assistant")
+  Rel(advertiser, adflow, "Manages campaigns", "HTTPS")
+  Rel(shopper, adflow, "Impressions and clicks", "HTTPS")
+  Rel(adflow, idp, "Validates tokens", "OIDC")
+  Rel(adflow, llm, "Prompts", "HTTPS")

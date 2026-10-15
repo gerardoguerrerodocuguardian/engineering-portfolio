@@ -1,0 +1,119 @@
+[model]
+title = "AdFlow"
+slug = "adflow"
+
+[[person]]
+id = "advertiser"
+name = "Advertiser"
+description = "Creates campaigns, sets budgets and bids"
+
+[[person]]
+id = "shopper"
+name = "Shopper"
+description = "Sees sponsored products and clicks"
+
+[[system]]
+id = "adflow"
+name = "AdFlow Platform"
+description = "Campaign management, real-time bidding, reporting"
+
+[[system]]
+id = "idp"
+name = "Identity Provider"
+description = "OAuth2 / OIDC"
+external = true
+
+[[system]]
+id = "llm"
+name = "LLM Provider"
+description = "Model API used by the analyst assistant"
+external = true
+
+[[container]]
+id = "dashboard"
+system = "adflow"
+name = "Angular dashboard"
+technology = "Angular, NgRx"
+description = "Campaign management UI"
+
+[[container]]
+id = "agent"
+system = "adflow"
+name = "Ads Analyst Agent"
+technology = "TypeScript"
+description = "Read-only analyst assistant with budgets and evals"
+
+[[container]]
+id = "campaign_api"
+system = "adflow"
+name = "Campaign API"
+technology = "NestJS, MongoDB"
+description = "Campaign CRUD and reporting, OpenAPI contract"
+
+[[container]]
+id = "bidding"
+system = "adflow"
+name = "Ad Bidding Platform"
+technology = "Spring Boot, PostgreSQL"
+description = "Bid decisions, budgets, idempotent event processing"
+
+[[container]]
+id = "kafka"
+system = "adflow"
+name = "Event backbone"
+technology = "Kafka"
+description = "adflow.ad-events and adflow.budget-events topics"
+
+[[relation]]
+from = "advertiser"
+to = "dashboard"
+description = "Manages campaigns"
+technology = "HTTPS"
+
+[[relation]]
+from = "shopper"
+to = "kafka"
+description = "Impressions and clicks"
+technology = "HTTPS"
+
+[[relation]]
+from = "dashboard"
+to = "campaign_api"
+description = "Calls"
+technology = "OpenAPI / JSON"
+
+[[relation]]
+from = "agent"
+to = "campaign_api"
+description = "Reads campaigns via tools"
+technology = "OpenAPI / JSON"
+
+[[relation]]
+from = "campaign_api"
+to = "bidding"
+description = "Publishes campaign state"
+technology = "HTTPS"
+
+[[relation]]
+from = "kafka"
+to = "bidding"
+description = "Delivers impressions and clicks"
+technology = "AsyncAPI"
+
+[[relation]]
+from = "bidding"
+to = "kafka"
+description = "BudgetExhausted via outbox"
+technology = "AsyncAPI"
+
+[[relation]]
+from = "campaign_api"
+to = "idp"
+description = "Validates tokens"
+technology = "OIDC"
+
+[[relation]]
+from = "agent"
+to = "llm"
+description = "Prompts"
+technology = "HTTPS"

@@ -1,0 +1,43 @@
+# archkit configuration for the AdFlow portfolio repository.
+# Paths are relative to `root`, which is the repository root.
+root = "../.."
+
+[adr]
+paths = ["track-architect/*/adr", "track-architect/*/docs/adr"]
+statuses = ["proposed", "accepted", "rejected", "deprecated", "superseded"]
+required_sections = ["Context", "Decision", "Consequences"]
+
+[readme]
+paths = ["track-*/*/README.md"]
+min_score = 80
+
+[[readme.waive]]
+path = "track-architect/01-reference-architecture/README.md"
+checks = ["purpose", "run"]
+reason = "Reference document: intro paragraph instead of 'What this is'; nothing to run."
+
+[deps]
+exclude_dirs = ["docs"]
+
+[[deps.rule]]
+name = "domain-is-framework-free"
+from = "**/src/main/java/**/domain/**"
+to = ["org/springframework/**", "jakarta/**", "io/adflow/*/adapters/**", "io/adflow/*/application/**"]
+message = "domain must not depend on frameworks, adapters or the application layer (ADR 0003)"
+
+[[deps.rule]]
+name = "application-does-not-know-adapters"
+from = "**/src/main/java/**/application/**"
+to = ["io/adflow/*/adapters/**"]
+message = "application depends on ports, never on adapters"
+
+[[deps.rule]]
+name = "no-cross-track-imports"
+from = "track-fullstack-dev/**/src/**"
+to = ["**/track-architect/**"]
+message = "full-stack projects must not import from architect projects"
+
+[[contracts.pair]]
+name = "campaign-api vs NestJS controllers"
+spec = "shared/contracts/campaign-api.openapi.yaml"
+nest = "track-fullstack-dev/02-nestjs-secure-api/src"

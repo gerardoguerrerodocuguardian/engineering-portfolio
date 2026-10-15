@@ -1,0 +1,40 @@
+name: architecture-toolkit
+on:
+  push:
+    paths:
+      - "track-architect/10-architecture-toolkit/**"
+      - "track-architect/**/adr/**"
+      - "shared/contracts/**"
+      - ".github/workflows/architecture-toolkit.yml"
+  pull_request:
+    paths:
+      - "track-architect/10-architecture-toolkit/**"
+      - "track-architect/**/adr/**"
+      - "shared/contracts/**"
+      - ".github/workflows/architecture-toolkit.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: track-architect/10-architecture-toolkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: track-architect/10-architecture-toolkit/pyproject.toml
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check src tests
+      - run: mypy src
+      - run: pytest
+      - name: Run archkit against this repository
+        run: |
+          archkit --config archkit.toml adr lint
+          archkit --config archkit.toml readme score
+          archkit --config archkit.toml deps check
+          archkit --config archkit.toml contracts check
+          archkit --config archkit.toml c4 render examples/adflow.model.toml --out docs/c4 --check

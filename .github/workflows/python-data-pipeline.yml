@@ -1,0 +1,29 @@
+name: python-data-pipeline
+on:
+  workflow_dispatch:
+  push:
+    paths: ['track-architect/09-python-data-pipeline/**', '.github/workflows/python-data-pipeline.yml']
+  pull_request:
+    paths: ['track-architect/09-python-data-pipeline/**', '.github/workflows/python-data-pipeline.yml']
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: track-architect/09-python-data-pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: track-architect/09-python-data-pipeline/pyproject.toml
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy
+      - run: pytest
+      - name: End-to-end smoke run
+        run: |
+          adflow generate --out /tmp/adflow-e2e --seed 42
+          adflow run --workdir /tmp/adflow-e2e
