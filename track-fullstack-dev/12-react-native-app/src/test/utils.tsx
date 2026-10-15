@@ -30,7 +30,7 @@ export function createHarness(
     push: createStubPushService(),
     ...overrides,
   };
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: 0 } } });
   const wrapper = ({ children }: { children: ReactNode }) => (
     <ServicesProvider services={services}>
       <QueryClientProvider client={queryClient}>

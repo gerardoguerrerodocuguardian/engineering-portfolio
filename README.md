@@ -36,6 +36,9 @@ Every project README has an **"Experience this project reflects"** section that 
 | [08 Micro-frontends](track-fullstack-dev/08-micro-frontends) | Module Federation, Web Components | Runtime remotes, failure isolation, when NOT to use them |
 | [09 React feature architecture](track-fullstack-dev/09-react-feature-architecture) | React, TanStack Query, MSW, zod | Enforced feature boundaries, contract-driven mocks, i18n |
 | [10 Angular real-time console](track-fullstack-dev/10-angular-realtime-console) | Angular Signals (zoneless), RxJS, Web Worker | WebSocket/SSE streaming, 100k-row virtual scroll, measured performance |
+| [08 Azure platform](track-architect/08-azure-platform) | Bicep, Container Apps, Service Bus, Key Vault, Azure DevOps | Cross-cloud mapping (AWS / GCP / Azure), managed identity, KEDA scaling |
+| [11 Kotlin coroutines service](track-fullstack-dev/11-kotlin-coroutines-service) | Kotlin 2, Ktor, coroutines/Flow, Kotest | Scatter/gather auction, sealed results, virtual-time tests |
+| [12 React Native app](track-fullstack-dev/12-react-native-app) | Expo, expo-router, TanStack Query | Mobile architecture, optimistic updates, offline cache |
 
 Shared API and event contracts: [`shared/contracts`](shared/contracts) (OpenAPI + AsyncAPI).
 
@@ -58,7 +61,7 @@ Each project is self-contained: it has its own README, build tool, tests and CI 
 
 ## Roadmap
 
-Azure variant of the platform, Kotlin service, mobile (React Native) client.
+Playwright visual regression for the design system, Lighthouse budgets in CI, a WebAssembly/edge example.
 
 ## Verification status
 
