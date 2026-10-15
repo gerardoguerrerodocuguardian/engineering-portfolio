@@ -25,7 +25,7 @@ jobs:
           - track-architect/03-learning-platform-aws/envs/prod
           - track-architect/07-gcp-event-pipeline/terraform
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: hashicorp/setup-terraform@v3
       - name: fmt
         run: terraform fmt -check -recursive "${{ matrix.dir }}"
@@ -39,7 +39,7 @@ jobs:
       run:
         working-directory: track-architect/06-platform-engineering
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: azure/setup-helm@v4
       - name: helm lint + template for both services
         run: |
@@ -61,7 +61,7 @@ jobs:
       run:
         working-directory: track-architect/08-azure-platform
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: bicep build + lint (compile only, never deploys)
         run: |
           az bicep install
