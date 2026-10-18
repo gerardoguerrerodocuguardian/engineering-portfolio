@@ -26,7 +26,13 @@ jobs:
       - name: Build (warnings are errors in src/)
         run: dotnet build AdFlow.Gateway.sln -c Release --no-restore
       - name: Test (xUnit integration tests via WebApplicationFactory)
-        run: dotnet test AdFlow.Gateway.sln -c Release --no-build --logger "console;verbosity=normal"
+        run: |
+          set -o pipefail
+          dotnet test AdFlow.Gateway.sln -c Release --no-build --logger "console;verbosity=normal" 2>&1 | tee /tmp/test.log
+      - name: Surface failing tests as annotations
+        if: failure()
+        run: |
+          grep -E "^\s+Failed |Assert\.|Expected|Actual|Error Message|Exception" /tmp/test.log | head -40 | while read -r l; do echo "::error::${l:0:300}"; done
 
   compose-smoke:
     needs: build-test
