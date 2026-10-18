@@ -185,6 +185,8 @@ The tests start the real gateway in-process (`WebApplicationFactory`) against fa
 
 ## Not verified
 
+> **Update — verified in GitHub Actions** (workflow `dotnet-api-gateway-yarp`): the solution builds with warnings-as-errors, the xUnit integration tests pass, and the Docker Compose smoke test passes on a runner with the .NET SDK. Getting there needed one fix: the in-memory `TestServer` refuses a decoded NUL byte before any middleware runs, so that case is asserted as "nothing is forwarded" instead of "returns 400". The paragraph below describes the original authoring session, which had no .NET SDK. Items that CI does not exercise are still unverified: the ModSecurity/CRS override, the Prometheus profile and alert rules, the k6 script, and behaviour behind a real TLS-terminating proxy or WAF.
+
 This project was written and reviewed, but **nothing was compiled, run or tested in the authoring environment**: no .NET SDK was available (`brew install dotnet` failed inside the sandbox, `sandbox_apply: Operation not permitted`, and the official install script's host was not reachable), so there was no `dotnet build`, no `dotnet test`, no `docker compose`, and no `curl` run against a live gateway. The CI workflow will be the first real compile and test run; expect to fix a few compile errors or test timing assumptions on that first run. In particular unverified are:
 
 - Exact NuGet package versions and some API details (YARP `RouteModel` metadata access, `IForwarderHttpClientFactory` members, OpenTelemetry Prometheus exporter options, YARP meter name `Yarp.ReverseProxy` and the Prometheus metric names used in the alert rules, the passive health-policy metadata key used in a test).
