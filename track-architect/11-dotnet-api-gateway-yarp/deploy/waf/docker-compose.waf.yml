@@ -1,0 +1,27 @@
+# UNVERIFIED configuration example: not run in CI and not tested by the author.
+# Puts ModSecurity v3 + OWASP Core Rule Set (nginx) in front of the gateway. Use as an override file:
+#   docker compose -f docker-compose.yml -f deploy/waf/docker-compose.waf.yml --profile waf up -d --build
+# Then send traffic to http://127.0.0.1:8000 instead of the gateway's own port.
+# Image/env names follow the public owasp/modsecurity-crs image documentation; check the tag you pin.
+services:
+  waf:
+    image: owasp/modsecurity-crs:nginx-alpine
+    profiles: ["waf"]
+    environment:
+      BACKEND: http://gateway:8080
+      PORT: "8000"
+      PARANOIA: "1"                  # raise gradually (2-4) while tuning false positives
+      ANOMALY_INBOUND: "5"
+      ANOMALY_OUTBOUND: "4"
+      MODSEC_RULE_ENGINE: DetectionOnly   # switch to On once the logs are clean
+      MODSEC_AUDIT_LOG_FORMAT: JSON
+    ports:
+      - "8000:8000"
+    depends_on: [gateway]
+    networks: [edge, internal]
+
+  # With the WAF in front, stop publishing the gateway directly and tell it to trust only the WAF's address:
+  gateway:
+    ports: !override []
+    environment:
+      Gateway__Forwarded__KnownNetworks__0: "172.16.0.0/12"

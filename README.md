@@ -42,6 +42,7 @@ Every project README has an **"Experience this project reflects"** section that 
 | [09 Python data pipeline](track-architect/09-python-data-pipeline) | Python, DuckDB, Polars, Pydantic | Idempotent loads, late data, quarantine, data-quality checks |
 | [10 Architecture toolkit](track-architect/10-architecture-toolkit) | Python CLI (`archkit`) | ADR lint, dependency rules, C4 from model, contract drift detection |
 | [13 FastAPI reporting service](track-fullstack-dev/13-python-fastapi-service) | FastAPI, Pydantic v2, async SQLAlchemy | JWT scopes, problem+json, SSE, mypy strict, 98% coverage |
+| [11 .NET API gateway (YARP)](track-architect/11-dotnet-api-gateway-yarp) | C#, ASP.NET Core, YARP | Step-by-step gateway: JWT, rate limiting, abuse blocking, validation, health checks, WAF integration |
 
 Shared API and event contracts: [`shared/contracts`](shared/contracts) (OpenAPI + AsyncAPI).
 

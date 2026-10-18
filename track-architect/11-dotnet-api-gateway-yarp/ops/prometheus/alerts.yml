@@ -1,0 +1,42 @@
+# Sample alert rules. Metric names follow the OpenTelemetry -> Prometheus conversion (dots become underscores,
+# counters get _total). Verify the exact names against your /admin/metrics output; they were not checked against a live scrape.
+groups:
+  - name: adflow-gateway
+    rules:
+      - alert: GatewayHigh5xxRatio
+        expr: |
+          sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[5m]))
+            / sum(rate(http_server_request_duration_seconds_count[5m])) > 0.05
+        for: 10m
+        labels: { severity: page }
+        annotations:
+          summary: "More than 5% of gateway responses are 5xx"
+      - alert: GatewayP99LatencyHigh
+        expr: histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket[5m]))) > 1.5
+        for: 10m
+        labels: { severity: ticket }
+        annotations:
+          summary: "p99 gateway latency above 1.5s"
+      - alert: GatewayRateLimitingSpike
+        expr: sum(rate(adflow_gateway_rejected_total{reason="rate_limited"}[5m])) > 5
+        for: 5m
+        labels: { severity: ticket }
+        annotations:
+          summary: "Sustained rate limiting: abusive client or limits too low"
+      - alert: GatewayAuthFailureSpike
+        expr: sum(rate(adflow_gateway_rejected_total{status="401"}[5m])) > 3
+        for: 5m
+        labels: { severity: ticket }
+        annotations:
+          summary: "Many 401s: credential stuffing, a broken client, or an expired signing key"
+      - alert: GatewayBansIssued
+        expr: increase(adflow_gateway_bans_total[15m]) > 5
+        labels: { severity: ticket }
+        annotations:
+          summary: "Several IPs were auto-banned in 15 minutes"
+      - alert: GatewayWafMatches
+        expr: sum(rate(adflow_gateway_waf_matches_total[5m])) > 1
+        for: 5m
+        labels: { severity: ticket }
+        annotations:
+          summary: "WAF-lite signatures matching continuously (scan in progress?)"

@@ -1,0 +1,76 @@
+# Gateway-only exposure: only the gateway publishes ports. The services sit on an internal network
+# (no route to the host or the internet) and have no "ports:" entry, only "expose:".
+#
+#   make certs   # one-off: self-signed dev certificate in ./certs (git-ignored)
+#   make up      # build and start
+#   make smoke   # curl walkthrough
+name: adflow-gateway
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: src/Gateway/Dockerfile
+    ports:
+      - "8080:8080"   # plain HTTP for the demo; terminate TLS at 8443 or in front of the gateway in real life
+      - "8443:8443"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:8080;https://+:8443"
+      Kestrel__Certificates__Default__Path: /certs/gateway.pfx
+      Kestrel__Certificates__Default__Password: ${CERT_PASSWORD:-dev-only-change-me}
+      # Demo conveniences. Do not copy these to a real environment.
+      Gateway__Auth__DevTokens__Enabled: "true"
+      Gateway__Https__Hsts: "true"
+      # Docker's bridge gateway address (what the host looks like from inside) joins the admin allowlist.
+      Gateway__IpFilter__AdminAllow__3: "172.16.0.0/12"
+    volumes:
+      - ./certs:/certs:ro
+    depends_on:
+      - campaigns-1
+      - campaigns-2
+      - reports
+    networks: [edge, internal]
+
+  campaigns-1:
+    build:
+      context: .
+      dockerfile: src/Services/Campaigns.Api/Dockerfile
+    environment:
+      INSTANCE_NAME: campaigns-1
+    expose: ["8080"]
+    networks: [internal]
+
+  campaigns-2:
+    build:
+      context: .
+      dockerfile: src/Services/Campaigns.Api/Dockerfile
+    environment:
+      INSTANCE_NAME: campaigns-2
+    expose: ["8080"]
+    networks: [internal]
+
+  reports:
+    build:
+      context: .
+      dockerfile: src/Services/Reports.Api/Dockerfile
+    expose: ["8080"]
+    networks: [internal]
+
+  # Optional: Prometheus scraping /admin/metrics. Start with: docker compose --profile observability up -d
+  # Put an admin JWT in ops/prometheus/token (see docs/steps/step-15-metrics.md). Configuration only; not run in CI.
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    profiles: ["observability"]
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - ./ops/prometheus/token:/etc/prometheus/token:ro
+    ports:
+      - "9090:9090"
+    networks: [edge, internal]
+
+networks:
+  edge: {}
+  internal:
+    internal: true
