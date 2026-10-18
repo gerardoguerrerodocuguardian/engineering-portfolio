@@ -205,7 +205,6 @@ public class RequestValidationTests
 
     [Theory]
     [InlineData("/api/v1/campaigns/%252e%252e/admin")] // double-encoded dot segments
-    [InlineData("/api/v1/campaigns/a%00b")]            // NUL byte
     [InlineData("/api/v1/campaigns/a%5cb")]            // backslash
     public async Task Suspicious_paths_are_rejected_with_400(string path)
     {
@@ -215,6 +214,27 @@ public class RequestValidationTests
         var response = await client.GetAsync(path);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.All(h.Campaigns, b => Assert.Empty(b.Requests));
+    }
+
+    [Fact]
+    public async Task Nul_byte_in_path_never_reaches_a_downstream_service()
+    {
+        await using var h = await Harness.CreateAsync();
+        using var client = h.Client(user: "alice");
+
+        // Like Kestrel, the in-memory TestServer refuses a decoded NUL byte before any middleware runs
+        // (it throws instead of returning a status), so the property under test is "nothing was forwarded".
+        try
+        {
+            var response = await client.GetAsync("/api/v1/campaigns/a%00b");
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+        catch (InvalidOperationException)
+        {
+            // expected with TestServer
+        }
+
         Assert.All(h.Campaigns, b => Assert.Empty(b.Requests));
     }
 
